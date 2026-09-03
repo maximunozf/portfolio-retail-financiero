@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Salidas de la verificación (se regeneran con 04_verificacion_kpis.py --csv)
+out/
+
+# Power BI
+*.pbix.bak
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

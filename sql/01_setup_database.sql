@@ -4,7 +4,8 @@
 -- OBJETIVO: Creación de la base de datos e integración de datos
 -- ==============================================================================
 
-CREATE DATABASE retail_financiero;
+CREATE DATABASE IF NOT EXISTS retail_financiero
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE retail_financiero;
 
 -- ==============================================================================
@@ -17,12 +18,18 @@ CREATE TABLE locales (
     region VARCHAR(100)
 );
 
+-- POR QUÉ limite_credito ENTRA COMO VARCHAR Y NO COMO DECIMAL:
+-- el 5,95% de los clientes llega sin límite informado (celda vacía). Cargarlo
+-- como DECIMAL haría que MySQL lo convirtiera silenciosamente a 0 en la
+-- ingesta, y un 0 inventado en el denominador distorsiona la utilización de
+-- crédito. Se recibe tal cual viene y la decisión se toma explícitamente en la
+-- capa de limpieza (02_data_wrangling.sql), donde queda documentada.
 CREATE TABLE clientes_credito (
     id_cliente INT PRIMARY KEY,
     nombre_completo VARCHAR(150),
-    fecha_nacimiento DATE,       
+    fecha_nacimiento DATE,
     limite_credito VARCHAR(50),
-    deuda_actual DECIMAL(10,2),  
+    deuda_actual DECIMAL(10,2),
     estado_riesgo VARCHAR(50)
 );
 
@@ -93,9 +100,22 @@ CREATE TABLE detalle_transacciones (
 );
 
 -- ==============================================================================
--- 3. INGESTA MASIVA DE ARCHIVOS CON SUS DATOS 
--- Nota: En entornos locales con restricciones de seguridad de XAMPP, 
--- se recomienda usar la pestaña 'Importar' de phpMyAdmin para cada tabla.
+-- 3. INGESTA DE LOS CSV
+--
+-- ORDEN OBLIGATORIO (las claves foráneas lo exigen):
+--   1) locales      2) clientes_credito   3) productos
+--   4) inventario   5) transacciones      6) detalle_transacciones
+--
+-- OPCIÓN A — phpMyAdmin (la que se usó en este proyecto, XAMPP en Windows):
+--   1. Seleccionar la base retail_financiero en el panel izquierdo.
+--   2. Clic en la tabla de destino y luego en la pestaña 'Importar'.
+--   3. 'Seleccionar archivo' → el CSV correspondiente de data/.
+--   4. Formato: 'CSV'.  Columnas separadas por: ,   Entrecomilladas por: "
+--   5. Marcar 'La primera línea del archivo contiene los nombres de columna'.
+--   6. 'Continuar'. Repetir con la siguiente tabla, en el orden de arriba.
+--
+-- OPCIÓN B — LOAD DATA INFILE (requiere local_infile=1 y que los CSV estén en
+-- la carpeta que indique secure_file_priv; por eso quedó comentada).
 -- ==============================================================================
 -- LOAD DATA INFILE './data/locales.csv' INTO TABLE locales FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
 -- LOAD DATA INFILE './data/clientes_credito.csv' INTO TABLE clientes_credito FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;

@@ -111,36 +111,86 @@ FROM transacciones;
 -- 2.1 Vista Limpia: Clientes Crédito
 -- Soluciona: Espacios en textos (TRIM) y convierte vacíos absolutos a NULL.
 -- Transforma el límite de crédito de texto (VARCHAR) a numérico financiero (DECIMAL).
-
+--
+-- POR QUÉ EL LÍMITE AUSENTE QUEDA EN NULL Y NO EN 0.00:
+-- 119 clientes (5,95%) no tienen límite de crédito registrado. Convertirlos a
+-- cero los dejaba dentro del denominador de la tasa de utilización de crédito
+-- con límite 0 pero con deuda > 0, lo que SOBRESTIMABA la utilización en unos
+-- 3 puntos porcentuales (ej.: cartera CASTIGADA marcaba 52,3% en vez de 49,2%).
+-- Un NULL propagado es honesto: "no sabemos su límite" no es lo mismo que
+-- "su límite es cero". Los KPI que dividen por el límite declaran esa base.
 CREATE VIEW vw_clientes_credito_limpios AS
 SELECT
 	id_cliente,
     TRIM(nombre_completo) AS nombre_completo,
     fecha_nacimiento,
-    COALESCE(CAST(NULLIF(TRIM(limite_credito), '') AS DECIMAL(15,2)), 0.00) AS limite_credito,
+    CAST(NULLIF(TRIM(limite_credito), '') AS DECIMAL(15,2)) AS limite_credito,
     deuda_actual,
     UPPER(TRIM(estado_riesgo)) AS estado_riesgo
-FROM clientes_credito
+FROM clientes_credito;
 
 -- ==============================================================================
 -- 2.2 Vista Limpia: Transacciones
--- Soluciona: 
+-- Soluciona:
 -- Estandarización de fechas mutantes (VARCHAR) a formato universal matemático (DATE).
 -- Limpieza de espacios basura, corrección ortográfica y unificación a mayúsculas en métodos de pago.
+--
+-- POR QUÉ SE AGREGÓ EL CUARTO FORMATO ('18 mayo 25'):
+-- La versión anterior sólo parseaba los 3 formatos numéricos y mandaba el resto
+-- a NULL. Eran 550 transacciones (11,0%) por $825.880.963 (11,1% de la
+-- facturación) que el KPI mensual descartaba mientras los KPI 1, 2 y 3 sí las
+-- contaban: dos totales distintos en el mismo informe, sin declararlo.
+--
+-- POR QUÉ SE MAPEA EL MES A MANO Y NO SE USA STR_TO_DATE(..., '%d %M %y'):
+-- '%M' depende de la variable de sesión lc_time_names del servidor MySQL, que
+-- por defecto viene en inglés. El mapeo explícito da el mismo resultado en
+-- cualquier instalación, sin configuración previa.
+--
+-- POR QUÉ SE CONSERVA formato_fecha_origen:
+-- Es trazabilidad. Permite responder "¿de qué formato venía este registro?" y
+-- aislar el subconjunto en texto sin tener que volver a la tabla cruda.
 -- ==============================================================================
 
 CREATE VIEW vw_transacciones_limpias AS
-SELECT 
+SELECT
     id_transaccion,
     id_local,
     id_cliente,
     -- De texto a DATE
-    CASE 
+    CASE
         WHEN fecha_venta REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$' THEN STR_TO_DATE(fecha_venta, '%d/%m/%Y')
         WHEN fecha_venta REGEXP '^[0-9]{2}-[0-9]{2}-[0-9]{4}$' THEN STR_TO_DATE(fecha_venta, '%d-%m-%Y')
         WHEN fecha_venta REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN STR_TO_DATE(fecha_venta, '%Y-%m-%d')
-        ELSE NULL 
-    END AS fecha_venta, 
+        WHEN fecha_venta REGEXP '^[0-9]{1,2} [a-zA-Z]+ [0-9]{2}$' THEN
+            STR_TO_DATE(
+                CONCAT(
+                    SUBSTRING_INDEX(fecha_venta, ' ', 1), '-',
+                    CASE LOWER(SUBSTRING_INDEX(SUBSTRING_INDEX(fecha_venta, ' ', 2), ' ', -1))
+                        WHEN 'enero'      THEN '01'
+                        WHEN 'febrero'    THEN '02'
+                        WHEN 'marzo'      THEN '03'
+                        WHEN 'abril'      THEN '04'
+                        WHEN 'mayo'       THEN '05'
+                        WHEN 'junio'      THEN '06'
+                        WHEN 'julio'      THEN '07'
+                        WHEN 'agosto'     THEN '08'
+                        WHEN 'septiembre' THEN '09'
+                        WHEN 'octubre'    THEN '10'
+                        WHEN 'noviembre'  THEN '11'
+                        WHEN 'diciembre'  THEN '12'
+                    END, '-',
+                    SUBSTRING_INDEX(fecha_venta, ' ', -1)
+                ), '%d-%m-%y')
+        ELSE NULL
+    END AS fecha_venta,
+    -- Trazabilidad del origen: de qué formato venía cada fecha.
+    CASE
+        WHEN fecha_venta REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'   THEN 'ISO'
+        WHEN fecha_venta REGEXP '^[0-9]{2}/[0-9]{2}/[0-9]{4}$'   THEN 'DD/MM/AAAA'
+        WHEN fecha_venta REGEXP '^[0-9]{2}-[0-9]{2}-[0-9]{4}$'   THEN 'DD-MM-AAAA'
+        WHEN fecha_venta REGEXP '^[0-9]{1,2} [a-zA-Z]+ [0-9]{2}$' THEN 'TEXTO'
+        ELSE 'NO_RECONOCIDO'
+    END AS formato_fecha_origen,
     monto_total,
             CASE 
     			WHEN UPPER(TRIM(tipo_pago)) = 'EFECTIVO' THEN 'EFECTIVO'

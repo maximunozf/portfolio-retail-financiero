@@ -1,0 +1,5 @@
+# Dependencias del pipeline.
+# 00_data_generator.py sólo usa la librería estándar (csv, random, datetime).
+# 04_verificacion_kpis.py necesita estas dos para recalcular los KPIs desde los CSV.
+duckdb>=1.0
+pandas>=2.0
