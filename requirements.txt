@@ -1,5 +1,7 @@
 # Dependencias del pipeline.
 # 00_data_generator.py sólo usa la librería estándar (csv, random, datetime).
-# 04_verificacion_kpis.py necesita estas dos para recalcular los KPIs desde los CSV.
+# 04_verificacion_kpis.py recalcula los KPIs desde los CSV.
+# 05_cargar_mysql.py reconstruye la base en MySQL.
 duckdb>=1.0
 pandas>=2.0
+mysql-connector-python>=9.0

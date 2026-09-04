@@ -2,12 +2,16 @@
 
 > Pipeline completo Python → MySQL → Power BI sobre un retail financiero chileno simulado de 16 locales: 5.000 transacciones, 2.000 clientes con línea de crédito y 1.600 registros de inventario.
 
-**Insight principal:** el **11,05% de la facturación ($819.575.324 de $7.417.609.719)** corresponde a ventas **sin cliente identificable**. Si no se aísla, ese registro técnico encabeza el ranking de clientes con **45 veces** el gasto del primer cliente real y deforma toda la segmentación de cartera. Detectarlo, aislarlo y declararlo es el resultado central de este proyecto.
+**Insight principal:** el **11,05% de la facturación ($819.575.324 de $7.417.609.719)** corresponde a ventas **sin cliente identificable**. Si no se aísla, ese registro técnico encabeza el ranking de clientes con **44,9 veces** el gasto del primer cliente real y deforma toda la segmentación de cartera. Detectarlo, aislarlo y declararlo es el resultado central de este proyecto.
 
-<!-- CAPTURAS: agregar los PNG en docs/ y descomentar estas líneas antes de publicar
-![Dashboard — Financiero General](docs/dashboard_01_financiero.png)
-![Dashboard — Riesgo Crediticio](docs/dashboard_03_riesgo.png)
--->
+![Dashboard — Visión General](docs/dashboard_01_vision_general.png)
+*Página 1 — Visión General: Ganancia Neta, margen, ticket promedio y deuda total, con la venta por sucursal y la composición de la deuda por estado de riesgo.*
+
+![Dashboard — Detalle de Ventas](docs/dashboard_02_detalle_ventas.png)
+*Página 2 — Detalle de Ventas: unidades, transacciones, % de venta a crédito y la evolución mensual sobre las 4.450 transacciones con fecha parseable.*
+
+![Dashboard — Cartera y Riesgo](docs/dashboard_03_cartera_riesgo.png)
+*Página 3 — Cartera y Riesgo: los 1.202 clientes en mora, la relación deuda/límite y el Top 15 por deuda. Los clientes sin límite informado se muestran como tales, no como límite cero.*
 
 ---
 
@@ -92,11 +96,18 @@ pip install -r requirements.txt
 
 1. **Los datos ya están en `data/`.** No hace falta generarlos. Si quieres regenerarlos desde cero:
    `python scripts/00_data_generator.py --force` (ver la nota sobre reproducibilidad más abajo).
-2. **Crear la base y las tablas:** ejecutar `sql/01_setup_database.sql`.
-3. **Cargar los 6 CSV** en este orden —`locales`, `clientes_credito`, `productos`, `inventario`, `transacciones`, `detalle_transacciones`— siguiendo las instrucciones paso a paso que están comentadas al final de ese mismo script.
-4. **Crear las vistas de limpieza:** ejecutar `sql/02_data_wrangling.sql`.
-5. **Correr los KPIs:** ejecutar `sql/03_business_analytics.sql`.
-6. **Verificar las cifras sin MySQL:** `python scripts/04_verificacion_kpis.py`. Recalcula desde los CSV cada número publicado en este README.
+
+2. **Levantar la base completa en un comando:**
+   ```bash
+   python scripts/05_cargar_mysql.py --password TU_CLAVE
+   ```
+   Crea la base, las 6 tablas con sus claves foráneas, carga los 21.236 registros en el orden que exigen las FK y crea las vistas de limpieza. Al terminar imprime un control de integridad: debe decir 5.000 transacciones y $7.417.609.719.
+
+   *Alternativa manual (phpMyAdmin / Workbench):* ejecutar `sql/01_setup_database.sql`, importar los 6 CSV en el orden `locales → clientes_credito → productos → inventario → transacciones → detalle_transacciones` siguiendo las instrucciones comentadas al final de ese script, y después ejecutar `sql/02_data_wrangling.sql`.
+
+3. **Correr los KPIs:** ejecutar `sql/03_business_analytics.sql`.
+
+4. **Verificar las cifras sin MySQL:** `python scripts/04_verificacion_kpis.py`. Recalcula desde los CSV cada número publicado en este README, por una vía independiente del motor de base de datos.
 
 ## Decisiones técnicas
 
@@ -113,7 +124,7 @@ Un umbral elegido a ojo deja de servir apenas cambia el ticket promedio. `NTILE(
 `%M` depende de la variable de sesión `lc_time_names`, que en MySQL viene en inglés por defecto: la misma consulta daría resultados distintos en dos servidores. El mapeo explícito funciona en cualquier instalación.
 
 **El KPI mensual declara su base y excluye 550 transacciones.**
-En el dataset versionado, todas las fechas en formato texto salieron con un literal fijo del generador, así que caen el mismo día. Incorporarlas triplicaría mayo e inventaría un peak que no existe. Se excluyen (base: 4.450 transacciones, 89,0%, $6.591.729.048) y se dice. El generador ya está corregido para datasets nuevos.
+En el dataset versionado, todas las fechas en formato texto salieron con un literal fijo del generador, así que caen el mismo día. Incorporarlas triplicaría mayo e inventaría un peak que no existe. Se excluyen (base: 4.450 transacciones, 89,0%, $6.591.728.756) y se dice. El generador ya está corregido para datasets nuevos.
 
 **Markup y margen son dos columnas distintas.**
 `(precio - costo) / costo` es markup; `(precio - costo) / precio` es margen. Antes la primera fórmula se publicaba con el nombre de la segunda. Ahora van las dos, rotuladas.
@@ -132,13 +143,15 @@ En el dataset versionado, todas las fechas en formato texto salieron con un lite
 ├── data/            CSV del dataset canónico (no modificar)
 ├── scripts/
 │   ├── 00_data_generator.py      generación del dataset sintético
-│   └── 04_verificacion_kpis.py   recálculo independiente de todas las cifras
+│   ├── 04_verificacion_kpis.py   recálculo independiente de todas las cifras
+│   └── 05_cargar_mysql.py        reconstrucción de la base en un comando
 ├── sql/
 │   ├── 01_setup_database.sql     modelo relacional + instrucciones de carga
 │   ├── 02_data_wrangling.sql     perfilamiento + vistas de limpieza
 │   └── 03_business_analytics.sql 16 consultas de KPI, cada una con su base
 ├── docs/
-│   └── dashboard.md              modelo, páginas y limitaciones del informe
+│   ├── dashboard.md              modelo, páginas y limitaciones del informe
+│   └── dashboard_0*.png          capturas de las 3 páginas (exportadas del .pbix)
 └── retail_financiero_dashboard.pbix
 ```
 

@@ -11,23 +11,23 @@ Conecta directamente a las **vistas de limpieza** de MySQL (`vw_transacciones_li
 | `detalle_transacciones` | Hechos — línea de venta | Tabla MySQL |
 | `productos`, `locales` | Dimensiones | Tablas MySQL |
 | `Calendario` | Dimensión de tiempo | Tabla calculada con DAX |
-| `_Medidas` | Tabla de medidas | Vacía, sólo contiene DAX |
+| `_Medidas` | Tabla contenedora de medidas | Tabla manual; su única columna (`Columna1`) está oculta porque Power BI no permite borrar la última columna de una tabla |
 
 **Por qué una tabla `Calendario` propia:** las funciones de inteligencia de tiempo de DAX necesitan una dimensión de fechas continua y marcada como tabla de fechas. Usar directamente `fecha_venta` deja huecos en los días sin venta y rompe cualquier comparación período a período.
 
 ## Páginas
 
-**1 · Visión General** — deuda total de cartera, ticket promedio, utilidad total, margen de utilidad %; venta por sucursal (barras) y deuda por estado de riesgo (anillo). Segmentadores de región y de fecha.
+**1 · Visión General** — Ganancia Neta, Margen de Utilidad %, Ticket Promedio y Deuda Total; venta por sucursal (barras) y deuda por estado de riesgo (anillo). Segmentadores de región y de fecha.
 
 **2 · Detalle de Ventas** — unidades vendidas, cantidad de transacciones, ticket promedio, % de ventas a crédito; top categorías y evolución mensual de ventas.
 
-**3 · Cartera y Riesgo** — deuda total, deuda promedio por cliente, % de cartera en mora, N° de clientes en riesgo; dispersión deuda vs. límite de crédito y tabla de top clientes en mora.
+**3 · Cartera y Riesgo** — deuda total, deuda promedio por cliente, % de cartera en mora, N° de clientes en riesgo; dispersión deuda vs. límite de crédito y la tabla *Top 15 Clientes en Mora*, ordenada por deuda actual descendente. Los clientes sin límite informado aparecen con la etiqueta "Sin límite informado" en vez de un $0 que sugeriría sobregiro.
 
 ## Decisiones y limitaciones del informe
 
 **Los indicadores de cartera no responden al segmentador de fechas.** `deuda_actual` es un saldo a una fecha de corte, no un flujo acumulable: filtrarlo por rango de fechas daría un número sin significado. Sí responden al segmentador de región. Está dicho aquí porque es la primera pregunta que genera el dashboard al mirarlo.
 
-**La evolución mensual excluye las 550 transacciones cuya fecha venía en texto.** En el dataset versionado todas caen el mismo día por un defecto del generador (ya corregido); incluirlas inventaría un peak en mayo. El filtro se aplica sobre la columna `formato_fecha_origen` de la vista. Base del gráfico: 4.450 transacciones (89,0%), $6.591.729.048.
+**La evolución mensual excluye las 550 transacciones cuya fecha venía en texto.** En el dataset versionado todas caen el mismo día por un defecto del generador (ya corregido); incluirlas inventaría un peak en mayo. El filtro se aplica sobre la columna `formato_fecha_origen` de la vista. Base del gráfico: 4.450 transacciones (89,0%), $6.591.728.756.
 
 **El cliente anónimo (id 9999) no distorsiona los visuales de cartera** porque entra con deuda 0 y estado `SIN RIESGO`. Sí está incluido —correctamente— en los visuales de venta, donde representa el 11,05% de la facturación.
 

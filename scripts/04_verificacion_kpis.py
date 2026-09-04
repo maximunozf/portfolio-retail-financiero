@@ -25,6 +25,16 @@ import argparse
 import os
 
 import duckdb
+import pandas as pd
+
+# Por defecto pandas imprime los montos grandes en notación científica
+# (8.195753e+08). Ese formato fue la causa raíz de que un monto se transcribiera
+# mal al README: la cifra impresa no era legible dígito a dígito. Se fuerza
+# formato fijo con separador de miles para que lo que se imprime sea exactamente
+# lo que se puede copiar a la documentación.
+pd.set_option('display.float_format', lambda valor: f'{valor:,.2f}')
+pd.set_option('display.width', 200)
+pd.set_option('display.max_columns', None)
 
 DIR_BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIR_DATOS = os.path.join(DIR_BASE, 'data')

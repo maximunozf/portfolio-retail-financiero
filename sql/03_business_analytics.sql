@@ -181,7 +181,7 @@ ORDER BY ganancia_unitaria DESC;
 -- Pregunta de Negocio: ¿Quiénes son los 10 clientes que más ingresos generan y cuál es su frecuencia?
 -- BASE DECLARADA: 1.749 clientes con al menos una compra; se excluye el id 9999.
 -- POR QUÉ SE EXCLUYE: sin este filtro el ranking lo encabezaba el cliente
--- anónimo con $819.575.324, es decir 45 veces el gasto del primer cliente real.
+-- anónimo con $819.575.324, es decir 44,9 veces el gasto del primer cliente real.
 -- El dato no se pierde: se reporta como hallazgo de calidad en el KPI 0.1.
 -- ----------------------------------------------------------------------------------------------
 SELECT
@@ -269,7 +269,7 @@ ORDER BY nombre_local ASC, ranking_local ASC;
 -- ----------------------------------------------------------------------------------------------
 -- KPI 10: Crecimiento Mes a Mes (Inteligencia de Tiempo)
 -- Pregunta de Negocio: ¿Cuál es la tendencia de nuestros ingresos mensuales y nuestro % de crecimiento?
--- BASE DECLARADA: 4.450 transacciones (89,0%) por $6.591.729.048 (88,9% de la
+-- BASE DECLARADA: 4.450 transacciones (89,0%) por $6.591.728.756 (88,9% de la
 -- facturación). Se excluyen las 550 transacciones cuya fecha venía en texto.
 -- POR QUÉ SE EXCLUYEN AUNQUE AHORA SÍ SE PARSEAN: en el dataset versionado el
 -- generador emitía ese formato con un literal fijo ('18 mayo 25'), de modo que
