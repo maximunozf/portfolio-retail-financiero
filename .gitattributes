@@ -1,0 +1,5 @@
+# GitHub clasifica los .sql como tipo "data" y por eso los excluye de la barra de
+# lenguajes del repositorio. En este proyecto el modelo relacional, las vistas de
+# limpieza y las 16 consultas de KPI son SQL, asi que se declara explicitamente para
+# que el lenguaje que muestra GitHub coincida con el que realmente se usa.
+*.sql linguist-detectable=true

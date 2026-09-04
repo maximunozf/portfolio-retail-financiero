@@ -13,7 +13,7 @@
 *Página 2 — Detalle de Ventas: unidades, transacciones, % de venta a crédito y la evolución mensual sobre las 4.450 transacciones con fecha parseable.*
 
 ![Dashboard — Cartera y Riesgo](docs/dashboard_03_cartera_riesgo.png)
-*Página 3 — Cartera y Riesgo: los 1.202 clientes en mora, la relación deuda/límite y el Top 15 por deuda. Los clientes sin límite informado se muestran como tales, no como límite cero.*
+*Página 3 — Cartera y Riesgo: los 1.202 clientes con deuda deteriorada (807 MOROSO + 395 CASTIGADO), la relación deuda/límite y el Top 15 por deuda. Los clientes sin límite informado se muestran como tales, no como límite cero.*
 
 ---
 
@@ -75,13 +75,15 @@ Cada cifra indica la base sobre la que se calculó. Todas se reproducen con `pyt
 De los $1.490.759.149 de deuda (base: 2.000 clientes), $922.417.161 corresponde a clientes MOROSO ($607.771.351) o CASTIGADO ($314.645.810). *Consecuencia:* la cobranza tiene un universo acotado y priorizable, no una cartera difusa.
 
 **3. La utilización de crédito sube junto con el riesgo.**
-Base: 1.881 clientes con límite informado. CASTIGADO usa el **49,2%** de su línea, MOROSO el **47,7%** y AL DÍA el **46,4%**. La brecha es de 2,8 puntos porcentuales. *Consecuencia:* la utilización sirve como señal temprana, pero débil; por sí sola no separa buenos de malos pagadores.
+Base: 1.881 clientes con límite informado, **razón de sumas por estado** (deuda total del estado / línea total del estado). CASTIGADO usa el **49,2%** de su línea, MOROSO el **47,7%** y AL DÍA el **46,4%**. La brecha es de 2,8 puntos porcentuales. *Consecuencia:* la utilización sirve como señal temprana, pero débil; por sí sola no separa buenos de malos pagadores.
+
+*Por qué razón de sumas y no promedio de razones:* la pregunta que responde este KPI es de cartera —de todo el crédito otorgado a los clientes castigados, cuánto está usado—, y ahí la línea de cada cliente tiene que pesar lo que vale. El promedio de razones responde otra pregunta, la del cliente típico, y da **48,1% / 47,1% / 45,9%**: la brecha baja a 2,2 pp y la conclusión no cambia. Las dos son correctas para su pregunta; lo que no es correcto es publicar una sin decir cuál. En mi otro proyecto ([analisis-riesgo-bancario-chile](https://github.com/maximunozf/analisis-riesgo-bancario-chile)) la elección es la contraria y por el mismo criterio: ahí el índice de cobertura ya viene calculado por banco-mes, así que promediar razones es lo que respeta el grano del dato.
 
 **4. Tecnología concentra el 44,8% de la venta y lidera en los 16 locales.**
 $3.322.053.298 de $7.417.609.719, con 9.569 unidades (base: las 12.520 líneas de detalle). No hay ningún local donde otra categoría desplace a tecnología. *Consecuencia:* el quiebre de stock en tecnología no es un problema local, es un problema de red.
 
 **5. No existe Pareto en esta cartera — y eso es un límite del dato, no un hallazgo comercial.**
-Se necesitan **948 de 1.749 clientes (54,2%)** para acumular el 80% de la venta. Un 80/20 real estaría cerca del 20%. *Consecuencia:* el generador reparte el gasto de forma uniforme, así que este dataset **no sirve** para concluir sobre concentración de clientes. Se deja el KPI publicado justamente para dejarlo dicho.
+Se necesitan **948 de 1.749 clientes (54,2%)** para acumular el 80% de la venta. La base son los 1.749 clientes que registran al menos una compra —no los 2.000 del universo—, porque un cliente sin compra no participa de una curva de concentración de venta. Un 80/20 real estaría cerca del 20%. *Consecuencia:* el generador reparte el gasto de forma uniforme, así que este dataset **no sirve** para concluir sobre concentración de clientes. Se deja el KPI publicado justamente para dejarlo dicho.
 
 **6. La segmentación anterior no segmentaba.**
 Con umbrales fijos de $900.000 y $500.000 sobre gasto acumulado —cuando el ticket promedio ya es $1.483.522— el **89,7%** de la cartera quedaba como "VIP". Reemplazados por terciles: el tercio alto (583 clientes) genera el **59,7%** de los ingresos y el tercio bajo el **11,3%**. *Consecuencia:* ahora los tramos discriminan y se pueden accionar por separado.
