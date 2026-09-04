@@ -1,4 +1,7 @@
-# Dashboard Power BI — `retail_financiero_dashboard.pbix`
+# Dashboard Power BI — `dashboard/retail_financiero_dashboard.pbix`
+
+> Para revisarlo sin instalar Power BI: [`dashboard/dashboard_retail_financiero.pdf`](../dashboard/dashboard_retail_financiero.pdf).
+> Es un export de las tres páginas, no un informe interactivo: los segmentadores de región y fecha no funcionan ahí.
 
 Conecta directamente a las **vistas de limpieza** de MySQL (`vw_transacciones_limpias`, `vw_clientes_credito_limpios`), no a las tablas crudas. Es decisión de diseño: la limpieza vive en SQL y el dashboard no la duplica en Power Query, así una corrección en la vista se propaga al informe con un solo refresh.
 
