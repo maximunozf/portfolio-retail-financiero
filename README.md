@@ -5,6 +5,7 @@
 **Insight principal:** el **11,05% de la facturación ($819.575.324 de $7.417.609.719)** corresponde a ventas **sin cliente identificable**. Si no se aísla, ese registro técnico encabeza el ranking de clientes con **44,9 veces** el gasto del primer cliente real y deforma toda la segmentación de cartera. Detectarlo, aislarlo y declararlo es el resultado central de este proyecto.
 
 📄 **[Ver el dashboard completo en PDF](dashboard/dashboard_retail_financiero.pdf)** — se abre en el navegador, sin instalar Power BI ni descargar nada.
+
 *Página 1 — Visión General: Ganancia Neta, margen, ticket promedio y deuda total, con la venta por sucursal y la composición de la deuda por estado de riesgo.*
 ![Dashboard — Visión General](docs/dashboard_01_vision_general.png)
 
