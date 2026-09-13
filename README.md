@@ -142,6 +142,12 @@ En el dataset versionado, todas las fechas en formato texto salieron con un lite
 - **16 locales de una cadena simulada**, no el retail financiero chileno.
 - El proyecto trabaja con datos reales de la CMF en su continuación: [analisis-riesgo-bancario-chile](https://github.com/maximunozf/analisis-riesgo-bancario-chile).
 
+## Qué me llevo de este proyecto
+
+Antes de responder la pregunta del negocio hay que medir cuánto del dato sirve. El 11 % sin cliente no era un error de carga: era la explicación del ranking equivocado que estaba a punto de publicar.
+Un dato ausente y un cero no son lo mismo. Convertir 119 límites de crédito vacíos en 0.00 sobrestimaba la utilización de crédito en unos 3 puntos porcentuales. "No sabemos su límite" es información; "su límite es cero" es un invento.
+Los umbrales fijos dejan de segmentar apenas cambia el ticket promedio. Con umbrales en pesos, el 89,7 % de la cartera quedaba clasificada como "VIP". Con terciles, el tercio alto explica el 59,7 % de los ingresos y el bajo el 11,3 %.
+
 ## Estructura del repositorio
 
 ```
